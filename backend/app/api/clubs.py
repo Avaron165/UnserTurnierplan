@@ -39,9 +39,9 @@ router = APIRouter(prefix="/clubs", tags=["Clubs"])
 
 @router.post("", response_model=ClubResponse, status_code=status.HTTP_201_CREATED)
 async def create_club(
-    club_in: ClubCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_in: ClubCreate,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Create a new club. Creator becomes the owner.
@@ -59,12 +59,12 @@ async def create_club(
 
 @router.get("", response_model=List[ClubResponse])
 async def list_clubs(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
-    search: Optional[str] = Query(None, max_length=100),
-    city: Optional[str] = Query(None, max_length=100),
-    verified_only: bool = Query(False),
-    db: AsyncSession = Depends(get_db),
+        skip: int = Query(0, ge=0),
+        limit: int = Query(100, ge=1, le=100),
+        search: Optional[str] = Query(None, max_length=100),
+        city: Optional[str] = Query(None, max_length=100),
+        verified_only: bool = Query(False),
+        db: AsyncSession = Depends(get_db),
 ):
     """
     List clubs with optional filters and pagination.
@@ -82,9 +82,9 @@ async def list_clubs(
 
 @router.get("/count")
 async def count_clubs(
-    search: Optional[str] = Query(None, max_length=100),
-    city: Optional[str] = Query(None, max_length=100),
-    db: AsyncSession = Depends(get_db),
+        search: Optional[str] = Query(None, max_length=100),
+        city: Optional[str] = Query(None, max_length=100),
+        db: AsyncSession = Depends(get_db),
 ):
     """
     Count clubs with filters.
@@ -93,11 +93,11 @@ async def count_clubs(
     return {"count": count}
 
 
-@router.get("/{club_id}", response_model=ClubWithMembers)
+@router.get("/{club_id}")
 async def get_club(
-    club_id: UUID,
-    include_members: bool = Query(False),
-    db: AsyncSession = Depends(get_db),
+        club_id: UUID,
+        include_members: bool = Query(False),
+        db: AsyncSession = Depends(get_db),
 ):
     """
     Get club by ID.
@@ -108,13 +108,15 @@ async def get_club(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
         )
-    return club
+
+    # Return ClubResponse always (members loaded but not included in response for now)
+    return ClubResponse.model_validate(club)
 
 
 @router.get("/slug/{slug}", response_model=ClubResponse)
 async def get_club_by_slug(
-    slug: str,
-    db: AsyncSession = Depends(get_db),
+        slug: str,
+        db: AsyncSession = Depends(get_db),
 ):
     """
     Get club by slug.
@@ -130,17 +132,17 @@ async def get_club_by_slug(
 
 @router.put("/{club_id}", response_model=ClubResponse)
 async def update_club(
-    club_id: UUID,
-    club_update: ClubUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        club_update: ClubUpdate,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Update club. Requires admin or owner role.
     """
     # Check permission
     await require_club_admin(club_id, current_user, db)
-    
+
     try:
         club = await ClubService.update(db, club_id, club_update)
         if not club:
@@ -159,16 +161,16 @@ async def update_club(
 
 @router.delete("/{club_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_club(
-    club_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Delete club (soft delete). Requires owner role.
     """
     # Check permission
     await require_club_owner(club_id, current_user, db)
-    
+
     success = await ClubService.delete(db, club_id)
     if not success:
         raise HTTPException(
@@ -183,11 +185,11 @@ async def delete_club(
 # CLUB MEMBER MANAGEMENT ENDPOINTS
 # ============================================================================
 
-@router.get("/{club_id}/members", response_model=List[ClubMemberWithUser])
+@router.get("/{club_id}/members", response_model=List[ClubMemberResponse])
 async def list_club_members(
-    club_id: UUID,
-    role: Optional[ClubRole] = Query(None),
-    db: AsyncSession = Depends(get_db),
+        club_id: UUID,
+        role: Optional[ClubRole] = Query(None),
+        db: AsyncSession = Depends(get_db),
 ):
     """
     List all members of a club.
@@ -199,24 +201,24 @@ async def list_club_members(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
         )
-    
+
     members = await ClubMemberService.list_club_members(db, club_id, role=role)
     return members
 
 
 @router.post("/{club_id}/members", response_model=ClubMemberResponse, status_code=status.HTTP_201_CREATED)
 async def add_club_member(
-    club_id: UUID,
-    member_in: ClubMemberCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        member_in: ClubMemberCreate,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Add a member to club. Requires admin or owner role.
     """
     # Check permission
     await require_club_admin(club_id, current_user, db)
-    
+
     try:
         member = await ClubMemberService.add_member(db, club_id, member_in)
         await db.commit()
@@ -230,18 +232,18 @@ async def add_club_member(
 
 @router.put("/{club_id}/members/{user_id}", response_model=ClubMemberResponse)
 async def update_club_member(
-    club_id: UUID,
-    user_id: UUID,
-    member_update: ClubMemberUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        user_id: UUID,
+        member_update: ClubMemberUpdate,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Update club member. Requires admin or owner role.
     """
     # Check permission
     await require_club_admin(club_id, current_user, db)
-    
+
     member = await ClubMemberService.update_member(db, club_id, user_id, member_update)
     if not member:
         raise HTTPException(
@@ -254,17 +256,17 @@ async def update_club_member(
 
 @router.delete("/{club_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_club_member(
-    club_id: UUID,
-    user_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        user_id: UUID,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Remove member from club. Requires admin or owner role.
     """
     # Check permission
     await require_club_admin(club_id, current_user, db)
-    
+
     # Cannot remove yourself if you're the owner
     if user_id == current_user.id:
         is_owner = await ClubMemberService.is_owner(db, club_id, user_id)
@@ -273,7 +275,7 @@ async def remove_club_member(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Owners cannot remove themselves. Transfer ownership first."
             )
-    
+
     try:
         success = await ClubMemberService.remove_member(db, club_id, user_id)
         if not success:
@@ -290,10 +292,10 @@ async def remove_club_member(
         )
 
 
-@router.get("/me/memberships", response_model=List[ClubMemberWithUser])
+@router.get("/me/memberships", response_model=List[ClubMemberResponse])
 async def get_my_clubs(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Get all clubs the current user is member of.
@@ -308,29 +310,29 @@ async def get_my_clubs(
 
 @router.post("/{club_id}/verify")
 async def request_verification(
-    club_id: UUID,
-    request_data: ClubVerificationRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+        club_id: UUID,
+        request_data: ClubVerificationRequest,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user),
 ):
     """
     Request club verification. Requires owner role.
     """
     # Check permission
     await require_club_owner(club_id, current_user, db)
-    
+
     club = await ClubService.get_by_id(db, club_id)
     if not club:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
         )
-    
+
     # TODO: Implement verification request logic
     # - Store documents
     # - Send notification to admins
     # - Update status to pending
-    
+
     return {
         "message": "Verification request submitted",
         "club_id": club_id,
@@ -340,10 +342,10 @@ async def request_verification(
 
 @router.put("/{club_id}/verification", response_model=ClubResponse)
 async def update_verification(
-    club_id: UUID,
-    decision: ClubVerificationDecision,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_superuser),
+        club_id: UUID,
+        decision: ClubVerificationDecision,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_superuser),
 ):
     """
     Update club verification status. Superuser only.
@@ -354,12 +356,12 @@ async def update_verification(
         decision.status,
         decision.notes
     )
-    
+
     if not club:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
         )
-    
+
     await db.commit()
     return club
