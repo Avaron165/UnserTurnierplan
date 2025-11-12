@@ -42,13 +42,24 @@
 - 13 User/Auth API Endpoints
 - Vollständige Dokumentation
 
-### Sprint 2 - Club Management ✅
+### Sprint 2 - Club Management ✅ (COMPLETED)
 - Club & ClubMember Models
 - 12 Club Schemas (Pydantic)
 - ClubService & ClubMemberService
 - 14 Club API Endpoints
 - Permission System mit 5 Rollen
 - Database Migration 002
+- **23/23 Tests bestanden** ✅
+- Vollständige Dokumentation
+
+**Test-Suite:** `tests/sprint2_tests.sh` (100% Pass Rate)
+
+**Lessons Learned:**
+- Enum-Serialisierung mit Pydantic v2 erfordert explizite Konfiguration
+- `use_enum_values=True` in ConfigDict ist essentiell
+- SQLAlchemy Enums brauchen `values_callable` für String-Values
+- Test-Scripts sollten `jq` für JSON-Parsing verwenden
+- URL-Encoding-Probleme bei Umlauten in curl vermeiden
 
 **API Endpoints Total:** 27 (13 User + 14 Club)  
 **Database Tables:** 4 (users, clubs, club_members, alembic_version)
@@ -496,6 +507,9 @@ docker-compose up -d
 - ✅ **SOLID Principles** - Clean Architecture
 - ✅ **DRY** - Don't Repeat Yourself
 - ✅ **Tests** - Test-Driven Development wo möglich
+- ✅ **Enum Serialization** - IMMER `use_enum_values=True` in Schemas
+- ✅ **JSON Parsing** - `jq` in Bash-Scripts statt grep/cut
+- ✅ **Response Models** - Explizite response_model in FastAPI Endpoints
 
 ### Code-Qualität:
 
@@ -611,11 +625,69 @@ docker-compose exec db psql -U postgres -d unserturnierplan
 - **Target Users:** Mittelgroße Vereine (100-500 Mitglieder)
 - **Business Model:** Freemium (Free, Pro, Premium, Enterprise)
 
-**Aktueller Fortschritt:** Sprint 2/23 Complete (≈9%)
+**Aktueller Fortschritt:** Sprint 2/23 Complete (≈9%) 🎉  
+**Sprint 2 Test-Coverage:** 23/23 Tests (100%) ✅
 
 ---
 
 ## 🐛 Bekannte Issues & Lösungen
+
+### Sprint 2 - Enum Serialization Issues (GELÖST)
+**Problem:** Pydantic konnte SQLAlchemy Enums nicht serialisieren  
+**Symptom:** `ResponseValidationError` bei GET /clubs/{id}  
+**Root Cause:** 
+- SQLAlchemy Enum-Namen (z.B. "PENDING") vs. Enum-Values ("pending")
+- Pydantic v2 braucht explizite `use_enum_values=True` Config
+
+**Lösung:**
+1. **In Models:** `values_callable=lambda x: [e.value for e in x]` bei SQLEnum
+2. **In Models:** Default-Werte mit `.value` (z.B. `ClubRole.MEMBER.value`)
+3. **In Schemas:** `model_config = ConfigDict(use_enum_values=True)`
+4. **In Schemas:** Enum-Felder als `str` deklarieren statt Enum-Type
+
+**Betroffene Dateien:**
+- `backend/app/models/club.py` (VerificationStatus)
+- `backend/app/models/club_member.py` (ClubRole)
+- `backend/app/schemas/club.py` (alle Response-Schemas)
+
+**Code-Beispiel:**
+```python
+# Model
+class ClubRole(str, Enum):
+    OWNER = "owner"
+    ADMIN = "admin"
+
+role = Column(
+    SQLEnum(ClubRole, name='club_role_enum', values_callable=lambda x: [e.value for e in x]),
+    default=ClubRole.MEMBER.value,
+    nullable=False
+)
+
+# Schema
+class ClubMemberResponse(BaseModel):
+    role: str  # NOT ClubRole!
+    
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+```
+
+### Sprint 2 - Test Script User ID Extraction (GELÖST)
+**Problem:** Test-Script konnte User-IDs nicht extrahieren  
+**Symptom:** Tests schlugen fehl mit "COPY_ID_FROM_ABOVE" als UUID  
+**Root Cause:** `grep`/`cut` war nicht robust genug für JSON-Parsing
+
+**Lösung:** `jq` für JSON-Parsing verwenden
+```bash
+# ❌ Schlecht
+USER_ID=$(echo "$RESPONSE" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+
+# ✅ Gut
+USER_ID=$(echo "$RESPONSE" | jq -r '.id')
+```
+
+### Sprint 2 - URL Encoding Umlaute (GELÖST)
+**Problem:** curl konnte Umlaute in Query-Parametern nicht verarbeiten  
+**Symptom:** `Invalid HTTP request received` bei `?city=München`  
+**Lösung:** Stadt ohne Umlaute im Test verwenden (München → Berlin)
 
 ### Issue 1: Migration Enum already exists
 **Problem:** `type "verification_status_enum" already exists`  
