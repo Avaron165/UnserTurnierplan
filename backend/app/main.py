@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.session import init_db, close_db
 from app.api import auth, users, clubs
+from app.api.tournaments import router as tournaments_router
 
 
 @asynccontextmanager
@@ -75,6 +76,7 @@ async def root():
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(users.router, prefix=settings.API_PREFIX)
 app.include_router(clubs.router, prefix=settings.API_PREFIX)
+app.include_router(tournaments_router, prefix=settings.API_PREFIX)
 
 
 if __name__ == "__main__":

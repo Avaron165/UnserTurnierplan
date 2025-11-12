@@ -19,6 +19,8 @@ from app.db.session import Base
 from app.models.user import User
 from app.models.club import Club
 from app.models.club_member import ClubMember
+from app.models.tournament import Tournament
+from app.models.tournament_participant import TournamentParticipant
 
 # Alembic Config object
 config = context.config

@@ -34,6 +34,11 @@ class User(BaseModel):
     
     # Relationships (will be added later)
     club_memberships = relationship("ClubMember", back_populates="user")
+    tournaments_created = relationship(
+        "Tournament",
+        back_populates="creator",
+        foreign_keys="Tournament.created_by"
+    )
     # tournaments_created = relationship("Tournament", back_populates="creator")
     
     def __repr__(self):

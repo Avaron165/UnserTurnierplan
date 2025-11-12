@@ -60,8 +60,7 @@ class Club(BaseModel):
         back_populates="club",
         cascade="all, delete-orphan"
     )
-
-    # tournaments = relationship("Tournament", back_populates="club")  # Later
+    tournaments = relationship("Tournament", back_populates="club", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Club {self.name}>"
