@@ -1,5 +1,5 @@
 """
-FastAPI dependencies for authentication
+FastAPI dependencies for authentication and permissions
 """
 from typing import Optional
 from uuid import UUID
@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.core.security import verify_token
 from app.services.user_service import UserService
+from app.services.club_member_service import ClubMemberService
 from app.models.user import User
+from app.models.club_member import ClubRole
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -100,3 +102,78 @@ async def get_current_user_optional(
         return await get_current_user(db=db, token=token)
     except HTTPException:
         return None
+
+
+# ============================================================================
+# CLUB PERMISSION DEPENDENCIES
+# ============================================================================
+
+async def require_club_owner(
+    club_id: UUID,
+    current_user: User,
+    db: AsyncSession
+) -> None:
+    """
+    Require user to be owner of the club.
+    Raises 403 if not owner.
+    """
+    is_owner = await ClubMemberService.is_owner(db, club_id, current_user.id)
+    if not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only club owners can perform this action"
+        )
+
+
+async def require_club_admin(
+    club_id: UUID,
+    current_user: User,
+    db: AsyncSession
+) -> None:
+    """
+    Require user to be admin or owner of the club.
+    Raises 403 if not admin or owner.
+    """
+    is_admin = await ClubMemberService.is_admin_or_owner(db, club_id, current_user.id)
+    if not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only club admins/owners can perform this action"
+        )
+
+
+async def require_club_manager(
+    club_id: UUID,
+    current_user: User,
+    db: AsyncSession
+) -> None:
+    """
+    Require user to be manager, admin or owner of the club.
+    Raises 403 if insufficient permissions.
+    """
+    can_manage = await ClubMemberService.can_manage(db, club_id, current_user.id)
+    if not can_manage:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only club managers/admins/owners can perform this action"
+        )
+
+
+async def require_club_member(
+    club_id: UUID,
+    current_user: User,
+    db: AsyncSession
+) -> None:
+    """
+    Require user to be member of the club.
+    Raises 403 if not a member.
+    """
+    is_member = await ClubMemberService.check_permission(
+        db, club_id, current_user.id, ClubRole.MEMBER
+    )
+    if not is_member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only club members can perform this action"
+        )
+

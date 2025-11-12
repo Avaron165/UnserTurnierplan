@@ -15,7 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.core.config import settings
 from app.db.session import Base
-from app.models.user import User  # Import all models here
+# Import all models here so Alembic can detect them
+from app.models.user import User
+from app.models.club import Club
+from app.models.club_member import ClubMember
 
 # Alembic Config object
 config = context.config

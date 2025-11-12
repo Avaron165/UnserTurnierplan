@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.session import init_db, close_db
-from app.api import auth, users
+from app.api import auth, users, clubs
 
 
 @asynccontextmanager
@@ -74,6 +74,7 @@ async def root():
 # Include routers
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(users.router, prefix=settings.API_PREFIX)
+app.include_router(clubs.router, prefix=settings.API_PREFIX)
 
 
 if __name__ == "__main__":

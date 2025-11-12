@@ -33,7 +33,7 @@ class User(BaseModel):
     last_login = Column(DateTime, nullable=True)
     
     # Relationships (will be added later)
-    # club_members = relationship("ClubMember", back_populates="user")
+    club_memberships = relationship("ClubMember", back_populates="user")
     # tournaments_created = relationship("Tournament", back_populates="creator")
     
     def __repr__(self):

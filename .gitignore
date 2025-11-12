@@ -83,3 +83,7 @@ dmypy.json
 
 # Pyre
 .pyre/
+
+# Windows
+*:Zone.Identifier
+
