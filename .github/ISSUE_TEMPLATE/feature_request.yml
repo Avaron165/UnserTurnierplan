@@ -1,0 +1,50 @@
+name: Feature Request
+description: Ein neues Feature vorschlagen
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vielen Dank für Ihren Feature-Vorschlag!
+  
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Welches Problem löst dieses Feature?
+      placeholder: Als [Benutzer-Typ] möchte ich [Ziel], damit [Grund]
+    validations:
+      required: true
+  
+  - type: textarea
+    id: solution
+    attributes:
+      label: Vorgeschlagene Lösung
+      description: Wie könnte die Lösung aussehen?
+      placeholder: Beschreiben Sie Ihre Lösung...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+      description: Haben Sie andere Lösungsansätze in Betracht gezogen?
+  
+  - type: textarea
+    id: usecases
+    attributes:
+      label: Use Cases
+      description: Wann und wie würde man dieses Feature nutzen?
+      placeholder: |
+        1. Use Case 1: ...
+        2. Use Case 2: ...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Screenshots, Mockups, Links zu ähnlichen Features, etc.

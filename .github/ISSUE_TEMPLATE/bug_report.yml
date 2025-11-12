@@ -1,0 +1,75 @@
+name: Bug Report
+description: Einen Bug melden
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vielen Dank für's Bug-Melden! Bitte füllen Sie das Formular vollständig aus.
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Was ist das Problem?
+      placeholder: Beschreiben Sie den Bug...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Reproduzieren
+      description: Wie kann man den Bug auslösen?
+      placeholder: |
+        1. Gehe zu '...'
+        2. Klicke auf '...'
+        3. Scrolle nach unten zu '...'
+        4. Bug tritt auf
+    validations:
+      required: true
+  
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten
+      description: Was sollte passieren?
+    validations:
+      required: true
+  
+  - type: textarea
+    id: actual
+    attributes:
+      label: Aktuelles Verhalten
+      description: Was passiert stattdessen?
+    validations:
+      required: true
+  
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Falls relevant, fügen Sie Screenshots hinzu
+  
+  - type: textarea
+    id: environment
+    attributes:
+      label: Umgebung
+      description: |
+        Beispiel:
+        - OS: Ubuntu 22.04
+        - Browser: Chrome 120
+        - Docker Version: 24.0.7
+      value: |
+        - OS:
+        - Browser:
+        - Docker Version:
+    validations:
+      required: true
+  
+  - type: textarea
+    id: context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Weitere relevante Informationen
