@@ -2,11 +2,17 @@
 Alembic environment configuration
 """
 import asyncio
+import sys
+from pathlib import Path
 from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
+
+# Add the parent directory to the path so we can import app
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from app.core.config import settings
 from app.db.session import Base
 from app.models.user import User  # Import all models here
