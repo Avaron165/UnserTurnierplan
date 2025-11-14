@@ -307,7 +307,8 @@ fi
 
 print_test "Test 7: Filter Tournaments by City"
 
-CITY_FILTER=$(curl -s -X GET "$BASE_URL/api/v1/tournaments?city=München")
+# Use URL-encoded München (M%C3%BCnchen) for proper umlaut handling
+CITY_FILTER=$(curl -s -X GET "$BASE_URL/api/v1/tournaments?city=M%C3%BCnchen")
 
 if echo "$CITY_FILTER" | jq -e ".[] | select(.id == \"$TOURNAMENT_ID\")" >/dev/null 2>&1; then
     print_success "Tournament found in city filter"
@@ -570,11 +571,18 @@ fi
 
 print_test "Test 22: Delete Tournament"
 
-# Set status back to draft first
-curl -s -X PUT "$BASE_URL/api/v1/tournaments/$TOURNAMENT_ID/status" \
+# First cancel the tournament (required before delete)
+print_info "Cancelling tournament before delete..."
+CANCEL_RESPONSE=$(curl -s -X PUT "$BASE_URL/api/v1/tournaments/$TOURNAMENT_ID/status" \
     -H "Authorization: Bearer $OWNER_TOKEN" \
     -H "Content-Type: application/json" \
-    -d '{"status": "draft"}' > /dev/null
+    -d '{"status": "cancelled"}')
+
+if echo "$CANCEL_RESPONSE" | jq -e '.status == "cancelled"' >/dev/null 2>&1; then
+    print_info "Tournament cancelled successfully"
+else
+    print_warning "Failed to cancel tournament, trying delete anyway..."
+fi
 
 DELETE_TOURNAMENT=$(curl -s -w "\n%{http_code}" -X DELETE "$BASE_URL/api/v1/tournaments/$TOURNAMENT_ID" \
     -H "Authorization: Bearer $OWNER_TOKEN")
