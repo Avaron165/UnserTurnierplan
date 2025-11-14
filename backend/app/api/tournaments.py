@@ -158,7 +158,7 @@ async def update_tournament(
         tournament_id: UUID,
         tournament_data: TournamentUpdate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Update tournament."""
     # TODO: Uncomment when auth is implemented
@@ -192,7 +192,7 @@ async def update_tournament(
 async def delete_tournament(
         tournament_id: UUID,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Delete tournament."""
     # TODO: Uncomment when auth is implemented
@@ -230,7 +230,7 @@ async def update_tournament_status(
         tournament_id: UUID,
         status_update: TournamentStatusUpdate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Update tournament status."""
     # TODO: Uncomment when auth is implemented
@@ -276,10 +276,8 @@ async def get_my_tournaments(
         current_user: User = Depends(get_current_user)
 ):
     """Get tournaments created by current user."""
-    # TODO: Use current_user.id when auth is implemented
-
     tournaments = await TournamentService.get_tournaments_by_creator(
-        db, current_user.id, skip, limit  # current_user.id
+        db, current_user.id, skip, limit
     )
     return tournaments
 
@@ -297,8 +295,6 @@ async def get_my_participations(
         current_user: User = Depends(get_current_user)
 ):
     """Get tournaments where user is participating."""
-    # TODO: Use current_user.id when auth is implemented
-
     participations = await TournamentParticipantService.get_user_participations(
         db, current_user.id, include_club_participations=True, skip=skip, limit=limit
     )
@@ -340,8 +336,6 @@ async def register_for_tournament(
         current_user: User = Depends(get_current_user)
 ):
     """Register participant for tournament."""
-    # TODO: Use current_user.id when auth is implemented
-
     try:
         participant = await TournamentParticipantService.register_participant(
             db, tournament_id, participant_data, current_user.id
@@ -408,7 +402,7 @@ async def update_participant(
         participant_id: UUID,
         participant_data: TournamentParticipantUpdate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Update participant registration."""
     # TODO: Uncomment when auth is implemented
@@ -443,7 +437,7 @@ async def remove_participant(
         tournament_id: UUID,
         participant_id: UUID,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Remove participant from tournament."""
     # TODO: Uncomment when auth is implemented
@@ -484,7 +478,7 @@ async def update_participant_status(
         participant_id: UUID,
         status_update: ParticipantStatusUpdate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Update participant status."""
     # TODO: Add permission check - only tournament managers
@@ -511,7 +505,7 @@ async def update_participant_payment(
         participant_id: UUID,
         payment_update: ParticipantPaymentUpdate,
         db: AsyncSession = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+        # current_user: User = Depends(get_current_user)
 ):
     """Update participant payment status."""
     # TODO: Add permission check - only tournament managers
@@ -525,3 +519,26 @@ async def update_participant_payment(
             detail="Participant not found"
         )
     return participant
+
+
+@router.delete(
+    "/{tournament_id}/participants/{participant_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove participant"
+)
+async def delete_participant(
+        tournament_id: UUID,
+        participant_id: UUID,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Remove a participant from the tournament."""
+    success = await TournamentParticipantService.remove_participant(
+        db, participant_id
+    )
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Participant not found"
+        )
+    return None
