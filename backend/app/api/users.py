@@ -33,8 +33,7 @@ async def update_my_profile(
     Update current user's profile
     """
     updated_user = await UserService.update(db, current_user.id, user_update)
-    await db.commit()
-    
+
     if not updated_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -53,8 +52,7 @@ async def delete_my_account(
     Delete current user's account (soft delete)
     """
     success = await UserService.delete(db, current_user.id)
-    await db.commit()
-    
+
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,8 +94,7 @@ async def update_user(
     Update user by ID (superuser only)
     """
     updated_user = await UserService.update(db, user_id, user_update)
-    await db.commit()
-    
+
     if not updated_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -117,8 +114,7 @@ async def delete_user(
     Delete user by ID (superuser only)
     """
     success = await UserService.delete(db, user_id)
-    await db.commit()
-    
+
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
