@@ -95,16 +95,29 @@ fi
 
 echo "Test user created. Token: ${ACCESS_TOKEN:0:20}..."
 
-# Create test club
+# Create test club (with timestamp to ensure uniqueness)
+CLUB_NAME="Match Test FC $(date +%s)"
 CLUB_RESPONSE=$(curl -s -X POST "$BASE_URL/clubs" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
     -H "Content-Type: application/json" \
     -d '{
-        "name": "Match Test FC",
-        "city": "München"
+        "name": "'$CLUB_NAME'",
+        "city": "Munich"
     }')
 
+# Debug club response
+if ! echo "$CLUB_RESPONSE" | jq . > /dev/null 2>&1; then
+    echo -e "${RED}Club creation failed. Response:${NC}"
+    echo "$CLUB_RESPONSE"
+    exit 1
+fi
+
 CLUB_ID=$(echo $CLUB_RESPONSE | jq -r '.id')
+if [ "$CLUB_ID" == "null" ]; then
+    echo -e "${RED}Club ID is null. Full response:${NC}"
+    echo "$CLUB_RESPONSE" | jq .
+    exit 1
+fi
 echo "Test club created: $CLUB_ID"
 
 # Create test tournament
@@ -121,6 +134,13 @@ TOURNAMENT_RESPONSE=$(curl -s -X POST "$BASE_URL/tournaments" \
         "max_participants": 8,
         "participant_type": "team"
     }')
+
+# Debug: Print response if failed
+if ! echo "$TOURNAMENT_RESPONSE" | jq . > /dev/null 2>&1; then
+    echo -e "${RED}Tournament creation failed. Response:${NC}"
+    echo "$TOURNAMENT_RESPONSE"
+    exit 1
+fi
 
 TOURNAMENT_ID=$(echo $TOURNAMENT_RESPONSE | jq -r '.id')
 echo "Test tournament created: $TOURNAMENT_ID"
