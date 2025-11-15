@@ -60,21 +60,27 @@ print_summary() {
 
 print_header "SPRINT 4 - MATCH SCHEDULING & BRACKETS TESTS"
 
+# Generate unique test data (timestamp-based to avoid collisions)
+TIMESTAMP=$(date +%s)
+TEST_EMAIL="match_test_${TIMESTAMP}@test.com"
+TEST_PASSWORD="Test1234Pass"  # No special chars to avoid bash escaping issues
+
 # Create test user
 echo "Setting up test environment..."
 REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/register" \
     -H "Content-Type: application/json" \
     -d '{
-        "email": "match_test@test.com",
-        "password": "Test1234!",
+        "email": "'$TEST_EMAIL'",
+        "password": "'$TEST_PASSWORD'",
         "first_name": "Match",
         "last_name": "Tester"
     }')
 
 USER_ID=$(echo $REGISTER_RESPONSE | jq -r '.id')
 
-if [ "$USER_ID" == "null" ]; then
-    echo -e "${RED}Failed to create test user${NC}"
+if [ "$USER_ID" == "null" ] || [ -z "$USER_ID" ]; then
+    echo -e "${RED}Failed to create test user. Response:${NC}"
+    echo "$REGISTER_RESPONSE" | jq .
     exit 1
 fi
 
@@ -82,21 +88,22 @@ fi
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login/json" \
     -H "Content-Type: application/json" \
     -d '{
-        "email": "match_test@test.com",
-        "password": "Test1234!"
+        "email": "'$TEST_EMAIL'",
+        "password": "'$TEST_PASSWORD'"
     }')
 
 ACCESS_TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.access_token')
 
-if [ "$ACCESS_TOKEN" == "null" ]; then
-    echo -e "${RED}Failed to login${NC}"
+if [ "$ACCESS_TOKEN" == "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+    echo -e "${RED}Failed to login. Response:${NC}"
+    echo "$LOGIN_RESPONSE" | jq .
     exit 1
 fi
 
 echo "Test user created. Token: ${ACCESS_TOKEN:0:20}..."
 
 # Create test club (with timestamp to ensure uniqueness)
-CLUB_NAME="Match Test FC $(date +%s)"
+CLUB_NAME="Match Test FC $TIMESTAMP"
 CLUB_RESPONSE=$(curl -s -X POST "$BASE_URL/clubs" \
     -H "Authorization: Bearer $ACCESS_TOKEN" \
     -H "Content-Type: application/json" \
