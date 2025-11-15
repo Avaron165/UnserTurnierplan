@@ -4,6 +4,7 @@
 # Tests all match-related functionality including CRUD, scoring, bracket generation, and standings
 
 set -e  # Exit on error
+set +H  # Disable history expansion (fixes ! in passwords)
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -59,7 +60,7 @@ print_summary() {
 
 print_header "SPRINT 4 - MATCH SCHEDULING & BRACKETS TESTS"
 
-# Create test user and get token
+# Create test user
 echo "Setting up test environment..."
 REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/register" \
     -H "Content-Type: application/json" \
@@ -70,11 +71,25 @@ REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/register" \
         "last_name": "Tester"
     }')
 
-ACCESS_TOKEN=$(echo $REGISTER_RESPONSE | jq -r '.access_token')
-USER_ID=$(echo $REGISTER_RESPONSE | jq -r '.user.id')
+USER_ID=$(echo $REGISTER_RESPONSE | jq -r '.id')
+
+if [ "$USER_ID" == "null" ]; then
+    echo -e "${RED}Failed to create test user${NC}"
+    exit 1
+fi
+
+# Login to get token
+LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login/json" \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "match_test@test.com",
+        "password": "Test1234!"
+    }')
+
+ACCESS_TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.access_token')
 
 if [ "$ACCESS_TOKEN" == "null" ]; then
-    echo -e "${RED}Failed to create test user${NC}"
+    echo -e "${RED}Failed to login${NC}"
     exit 1
 fi
 
