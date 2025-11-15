@@ -15,7 +15,7 @@ from sqlalchemy import (
     Column, String, Text, DateTime, Date, Integer, Boolean, 
     Numeric, ForeignKey, Enum as SQLEnum, Index
 )
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
 from sqlalchemy.orm import relationship
 
 from app.models.base import BaseModel
@@ -173,7 +173,24 @@ class Tournament(BaseModel):
     # Contact Information
     contact_email = Column(String(255))
     contact_phone = Column(String(50))
-    
+
+
+    # Tournament Format Rules (Sprint 4) - for complex tournament structures
+    format_rules = Column(JSONB, nullable=True)
+    # Examples:
+    # Group Stage + Knockout:
+    # {
+    #   "group_stage": {
+    #     "num_groups": 4,
+    #     "teams_per_group": 4,
+    #     "advance_per_group": 2
+    #   },
+    #   "knockout": {
+    #     "type": "single_elimination",
+    #     "seeding_method": "group_winners_first"
+    #   }
+    # }
+
     # Relationships
     club = relationship("Club", back_populates="tournaments")
     creator = relationship("User", foreign_keys="[Tournament.created_by]", back_populates="tournaments_created")
@@ -182,7 +199,12 @@ class Tournament(BaseModel):
         back_populates="tournament",
         cascade="all, delete-orphan"
     )
-    
+    matches = relationship(
+        "Match",
+        back_populates="tournament",
+        cascade="all, delete-orphan"
+    )
+
     # Indexes for common queries
     __table_args__ = (
         Index('idx_tournament_club_status', 'club_id', 'status'),

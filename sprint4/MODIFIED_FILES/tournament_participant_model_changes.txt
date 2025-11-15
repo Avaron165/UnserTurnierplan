@@ -1,0 +1,30 @@
+# MODIFICATIONS FOR: backend/app/models/tournament_participant.py
+
+## ADD NEW FIELD (after existing participant fields, around line 40-50):
+
+    # Group Assignment (Sprint 4) - for group stage tournaments
+    group_assignment = Column(String(50), nullable=True, index=True)
+    # Examples: "Group A", "Pool 1", "Division East"
+    # Used to assign participants to groups BEFORE match generation
+
+---
+
+## COMPLETE ADDITION TO MAKE:
+
+After the existing participant fields (e.g., after `participant_user_id` or similar), add:
+
+```python
+    # Group Assignment (for multi-group tournaments)
+    group_assignment = Column(String(50), nullable=True, index=True)
+```
+
+---
+
+## ALSO ADD INDEX TO MIGRATION (if creating new migration):
+
+In the tournament_participants table creation, add index:
+```python
+op.create_index('idx_participant_group', 'tournament_participants', ['tournament_id', 'group_assignment'])
+```
+
+This will help with querying participants by group.

@@ -76,6 +76,7 @@ class TournamentParticipant(BaseModel):
         nullable=True,
         index=True
     )
+    group_assignment = Column(String(50), nullable=True, index=True)
     
     # Registered by (the user who made the registration)
     registered_by = Column(

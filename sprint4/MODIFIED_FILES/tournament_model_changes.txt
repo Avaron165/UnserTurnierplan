@@ -1,0 +1,64 @@
+# MODIFICATIONS FOR: backend/app/models/tournament.py
+
+## ADD TO IMPORTS (at top of file):
+# No additional imports needed - relationship already imported
+
+## ADD TO RELATIONSHIPS SECTION (around line 195, after existing relationships):
+
+    # Match Relationships (Sprint 4)
+    matches = relationship(
+        "Match",
+        back_populates="tournament",
+        cascade="all, delete-orphan"
+    )
+
+## ADD NEW FIELD (after existing fields, before relationships):
+
+    # Tournament Format Rules (Sprint 4) - for complex tournament structures
+    format_rules = Column(JSONB, nullable=True)
+    # Examples:
+    # Group Stage + Knockout:
+    # {
+    #   "group_stage": {
+    #     "num_groups": 4,
+    #     "teams_per_group": 4,
+    #     "advance_per_group": 2
+    #   },
+    #   "knockout": {
+    #     "type": "single_elimination",
+    #     "seeding_method": "group_winners_first"
+    #   }
+    # }
+
+---
+
+## COMPLETE ADDITION TO MAKE:
+
+After line ~192 (before relationships), add:
+
+```python
+    # Tournament Format Rules (JSONB for complex structures)
+    format_rules = Column(JSONB, nullable=True)
+```
+
+After line ~204 (in relationships section), add:
+
+```python
+    matches = relationship(
+        "Match",
+        back_populates="tournament",
+        cascade="all, delete-orphan"
+    )
+```
+
+---
+
+## VERIFY IMPORTS INCLUDE:
+```python
+from sqlalchemy.dialects.postgresql import JSONB  # Should already be there for UUID
+```
+
+If JSONB not imported yet:
+```python
+from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
+```
