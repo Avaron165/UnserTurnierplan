@@ -19,7 +19,7 @@ class ClubBase(BaseModel):
     address: Optional[str] = Field(None, max_length=200)
     city: Optional[str] = Field(None, max_length=100)
     postal_code: Optional[str] = Field(None, max_length=20)
-    country: str = Field(default="Deutschland", max_length=100)
+    country: Optional[str] = Field(default="Deutschland", max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
     email: Optional[str] = Field(None, max_length=255)
     website: Optional[str] = Field(None, max_length=500)
