@@ -30,7 +30,6 @@ async def register(
     """
     try:
         user = await UserService.create(db, user_in)
-        await db.commit()
         return user
     except ValueError as e:
         raise HTTPException(
@@ -61,8 +60,7 @@ async def login(
     
     # Update last login
     user.last_login = datetime.utcnow()
-    await db.commit()
-    
+
     # Create tokens
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
@@ -95,8 +93,7 @@ async def login_json(
     
     # Update last login
     user.last_login = datetime.utcnow()
-    await db.commit()
-    
+
     # Create tokens
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})

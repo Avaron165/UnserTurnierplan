@@ -48,7 +48,6 @@ async def create_club(
     """
     try:
         club = await ClubService.create(db, club_in, current_user.id)
-        await db.commit()
         return club
     except ValueError as e:
         raise HTTPException(
@@ -150,7 +149,6 @@ async def update_club(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Club not found"
             )
-        await db.commit()
         return club
     except ValueError as e:
         raise HTTPException(
@@ -177,7 +175,6 @@ async def delete_club(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
         )
-    await db.commit()
     return None
 
 
@@ -221,7 +218,6 @@ async def add_club_member(
 
     try:
         member = await ClubMemberService.add_member(db, club_id, member_in)
-        await db.commit()
         return member
     except ValueError as e:
         raise HTTPException(
@@ -250,7 +246,6 @@ async def update_club_member(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Member not found"
         )
-    await db.commit()
     return member
 
 
@@ -283,7 +278,6 @@ async def remove_club_member(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Member not found"
             )
-        await db.commit()
         return None
     except ValueError as e:
         raise HTTPException(
@@ -363,5 +357,4 @@ async def update_verification(
             detail="Club not found"
         )
 
-    await db.commit()
     return club
